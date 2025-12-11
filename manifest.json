@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Sticky Notes on Pages",
+  "version": "1.0",
+  "description": "Place sticky notes on specific pages and see them again when you return.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [ "<all_urls>" ],
+      "js": [ "contentScript.js" ],
+      "css": [ "styles.css" ],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "create-sticky-note": {
+      "suggested_key": {
+        "default": "Alt+Shift+N"
+      },
+      "description": "Create a new sticky note on the current page"
+    }
+  }
+}
