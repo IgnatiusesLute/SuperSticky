@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Sticky Notes on Pages",
+  "name": "SuperSticky",
   "version": "1.0",
   "description": "Place sticky notes on specific pages and see them again when you return.",
   "permissions": [
