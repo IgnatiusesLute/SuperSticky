@@ -9,6 +9,10 @@
     font-family: sans-serif;
     display: flex;
     flex-direction: column;
+    resize: both;
+    overflow: auto;
+    min-width: 140px;
+    min-height: 100px;
 }
 
 .sticky-note-header {
