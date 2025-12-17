@@ -58,6 +58,8 @@ function createNewNoteObject() {
         id: Date.now().toString() + Math.random().toString(16).slice(2),
         x: 50,
         y: 50,
+        width: 200,
+        height: 140,
         text: "",
         minimized: false,
         anchor: null // { quote, prefix, suffix }
@@ -74,6 +76,8 @@ function renderNote(note) {
     noteEl.dataset.stickyNoteId = note.id;
     noteEl.style.left = note.x + "px";
     noteEl.style.top = note.y + "px";
+    noteEl.style.width = (note.width || 200) + "px";
+    noteEl.style.height = (note.height || 140) + "px";
 
     if (note.minimized) noteEl.classList.add("minimized");
 
@@ -99,6 +103,22 @@ function renderNote(note) {
     noteEl.appendChild(bodyEl);
 
     document.body.appendChild(noteEl);
+
+    const ro = new ResizeObserver(() => {
+        // Ignore when minimized (display:none can cause weird sizes)
+        if (noteEl.classList.contains("minimized")) return;
+
+        const rect = noteEl.getBoundingClientRect();
+        if (rect.width < 50 || rect.height < 50) return;
+
+        const n = notesState.find(n2 => n2.id === note.id);
+        if (!n) return;
+
+        n.width = Math.round(rect.width);
+        n.height = Math.round(rect.height);
+        scheduleSave(); // debounced save
+    });
+    ro.observe(noteEl);
 
     // Drag behavior on header
     makeDraggable(noteEl, headerEl, note.id);
@@ -160,6 +180,26 @@ function openNote(noteId) {
         n.minimized = false;
         saveNotesForPage();
     }
+}
+function minimizeNote(noteId) {
+    const noteEl = document.querySelector(`[data-sticky-note-id="${noteId}"]`);
+    if (!noteEl) return;
+
+    noteEl.classList.add("minimized");
+
+    const n = notesState.find(n2 => n2.id === noteId);
+    if (n) {
+        n.minimized = true;
+        saveNotesForPage();
+    }
+}
+
+function toggleNote(noteId) {
+    const noteEl = document.querySelector(`[data-sticky-note-id="${noteId}"]`);
+    if (!noteEl) return;
+
+    if (noteEl.classList.contains("minimized")) openNote(noteId);
+    else minimizeNote(noteId);
 }
 
 // ---------- Drag ----------
@@ -266,7 +306,7 @@ function wrapCurrentSelectionWithAnchor(noteId) {
             existingAnchor.dataset.noteId = noteId;
             existingAnchor.addEventListener("click", (e) => {
                 e.stopPropagation();
-                openNote(noteId);
+                toggleNote(noteId);
             });
             sel.removeAllRanges();
             return true;
@@ -290,7 +330,7 @@ function wrapCurrentSelectionWithAnchor(noteId) {
 
     span.addEventListener("click", (e) => {
         e.stopPropagation();
-        openNote(noteId);
+        toggleNote(noteId);
     });
 
     return true;
@@ -466,7 +506,7 @@ function wrapRangeWithAnchorSpan(range, noteId) {
 
     span.addEventListener("click", (e) => {
         e.stopPropagation();
-        openNote(noteId);
+        toggleNote(noteId);
     });
 
     return true;
